@@ -12,19 +12,20 @@ after rotating the image.
 import os
 import sys
 import cv2
-from matplotlib import pyplot as plt
 import numpy as np
 
+#for file selection
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
 run = 0 # Counting to run twice
 
-
 #Setting the file
 Tk().withdraw()
-name = askopenfilename(initialdir=os.getcwd(), title="Select an image file.") #TODO change to just images
-
+name = askopenfilename(initialdir=os.getcwd(),
+                       title="Select an image file.",
+                       filetypes=[('image files', ('.jpg','.png','.tif','.bmp','.tiff'))])
+print("\n", name, " selected.\n")
 img = cv2.imread(name) #creating image
 img2 = cv2.imread(name) #creating second image
 
