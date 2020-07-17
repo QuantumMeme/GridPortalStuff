@@ -15,11 +15,15 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 
-print ("\n")
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
 run = 0 # Counting to run twice
 
-name = 'resources/ATLANTIS-1.jpg' #SET THE FILE HERE
+
+#Setting the file
+Tk().withdraw()
+name = askopenfilename(initialdir=os.getcwd(), title="Select an image file.") #TODO change to just images
 
 img = cv2.imread(name) #creating image
 img2 = cv2.imread(name) #creating second image
