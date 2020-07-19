@@ -9,6 +9,8 @@ after rotating the image.
 '''
 # -*- coding: utf-8 -*-
 
+import conv
+
 import os
 import sys
 import cv2
