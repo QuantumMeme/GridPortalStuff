@@ -6,6 +6,8 @@ pip install pdf2image
 
 import sys
 import os
+import filetype
+
 from pdf2image import convert_from_path
 try:
     from PIL import Image

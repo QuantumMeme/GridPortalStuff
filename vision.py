@@ -6,16 +6,24 @@ Uses Google's Vision API to detect text in an image.
 
 Returns the text in output.txt for the first pass, and output2.txt for the second
 after rotating the image.
+
+ik this could be done better; it's jsut for testing.
 '''
 # -*- coding: utf-8 -*-
-
-import conv
-
 import os
 import sys
-import cv2
+import cv2 #openCV
 import numpy as np
+import filetype
 
+#for pdf2image
+'''
+from pdf2image import convert_from_path
+try:
+    from PIL import Image
+except ImportError:
+    import Image
+'''
 #for file selection
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
@@ -26,7 +34,24 @@ run = 0 # Counting to run twice
 Tk().withdraw()
 name = askopenfilename(initialdir=os.getcwd(),
                        title="Select an image file.",
-                       filetypes=[('image files', ('.jpg','.png','.tif','.bmp','.tiff'))])
+                       filetypes=[('image files', ('.jpg','.png','.tif','.bmp','.tiff')),
+                                  ('PDF', '.pdf')])
+
+#If the file is a pdf, then converted it to an image
+'''
+kind = filetype.guess(name)
+if (kind.extension == 'pdf'):
+    print("Running convert_from_path()...")
+    pages = convert_from_path(name, 500)
+
+
+    print("Saving page(s)...")
+    for page in pages:
+        page.save('visionpyfiles/converted.png', 'PNG')
+
+    name = 'visionpyfiles/converted.png'
+'''
+
 print("\n", name, " selected.\n")
 img = cv2.imread(name) #creating image
 img2 = cv2.imread(name) #creating second image
