@@ -7,7 +7,7 @@ Uses Google's Vision API to detect text in an image.
 Returns the text in output.txt for the first pass, and output2.txt for the second
 after rotating the image.
 
-ik this could be done better; it's jsut for testing.
+ik this could be done better; it's just for testing.
 '''
 # -*- coding: utf-8 -*-
 import os
@@ -29,6 +29,7 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
 run = 0 # Counting to run twice
+necessity = 0 #do we even have to run twice
 
 #Setting the file
 Tk().withdraw()
@@ -70,6 +71,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
         fill        - Optional  : bar fill character (Str)
         printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
+
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
@@ -145,59 +147,63 @@ def detect_text(path):
 
     rects = 0 # counting number of iterations in below for-loop for each rectangle in final image
 
-    printProgressBar(0, (len(texts)), prefix = 'Progress:', suffix = 'Complete', length = 50) #initial call to print 0% progress
+    if (len(texts) != 0):
+        printProgressBar(0, (len(texts)), prefix = 'Progress:', suffix = 'Complete', length = 50) #initial call to print 0% progress
 
-    for text in texts:
+        for text in texts:
 
-        #text is outputted into the output files.
-        if (run == 0):
-            uprint(u'\n"{}"'.format(text.description), file=open("output.txt", "a"))
-        else:
-            uprint(u'\n"{}"'.format(text.description), file=open("output2.txt", "a"))
+            #text is outputted into the output files.
+            if (run == 0):
+                uprint(u'\n"{}"'.format(text.description), file=open("output.txt", "a"))
+            else:
+                uprint(u'\n"{}"'.format(text.description), file=open("output2.txt", "a"))
 
-        counter = 0 #finding vertices of each word
+            counter = 0 #finding vertices of each word
 
-        vertices = (['({},{})'.format(vertex.x, vertex.y) #all coordinates that are stored in the bounding polygon stored
-                    for vertex in text.bounding_poly.vertices])
-        
-        if (run == 0):
-            uprint(u'bounds: {}'.format(','.join(vertices)), file = open("output.txt", "a")) #printing the 4 vertices outlining the rectangle
-        else:
-            uprint(u'bounds: {}'.format(','.join(vertices)), file = open("output2.txt", "a"))
+            vertices = (['({},{})'.format(vertex.x, vertex.y) #all coordinates that are stored in the bounding polygon stored
+                        for vertex in text.bounding_poly.vertices])
+            
+            if (run == 0):
+                uprint(u'bounds: {}'.format(','.join(vertices)), file = open("output.txt", "a")) #printing the 4 vertices outlining the rectangle
+            else:
+                uprint(u'bounds: {}'.format(','.join(vertices)), file = open("output2.txt", "a"))
 
-        polygon = [] # for fillConvexPoly() later
+            polygon = [] # for fillConvexPoly() later
 
-        for vertex in text.bounding_poly.vertices: #getting coordinates for cv2.rectangle()
-            polygon.append((vertex.x, vertex.y))
-            if (counter == 0):
-                x1 = vertex.x
-                y1 = vertex.y
-            elif (counter == 2):
-                x2 = vertex.x
-                y2 = vertex.y
-            counter += 1
-        #rectangles surrounding text
-        if (run == 0):
-            if (rects == 0): #initial rectangle is in red
-                color = (0,0,255)
-            else: #remaining ones are in blue
-                color = (255,0,0)
-        else:
-            if (rects == 0): #initial rectangle is in green
-                color = (0,255,0)
-            else: #remaining ones are in blue
-                color = (255,0,0)
+            for vertex in text.bounding_poly.vertices: #getting coordinates for cv2.rectangle()
+                polygon.append((vertex.x, vertex.y))
+                if (counter == 0):
+                    x1 = vertex.x
+                    y1 = vertex.y
+                elif (counter == 2):
+                    x2 = vertex.x
+                    y2 = vertex.y
+                counter += 1
+            #rectangles surrounding text
+            if (run == 0):
+                if (rects == 0): #initial rectangle is in red
+                    color = (0,0,255)
+                else: #remaining ones are in blue
+                    color = (255,0,0)
+            else:
+                if (rects == 0): #initial rectangle is in green
+                    color = (0,255,0)
+                else: #remaining ones are in blue
+                    color = (255,0,0)
 
-        cv2.rectangle(img, (x1,y1), (x2,y2), color, 2) #placing rectangles in image
-        
+            cv2.rectangle(img, (x1,y1), (x2,y2), color, 2) #placing rectangles in image
+            
 
-        #removing text
-        if(rects != 0):
-            cv2.fillConvexPoly(img2, np.array(polygon, 'int32'), (255,255,255)) #whites out the text. TODO detect color
+            #removing text
+            if(rects != 0):
+                cv2.fillConvexPoly(img2, np.array(polygon, 'int32'), (255,255,255)) #whites out the text. TODO detect color
 
-        printProgressBar(rects + 1, (len(texts)), prefix = 'Progress:', suffix = 'Complete', length = 50)
+            printProgressBar(rects + 1, (len(texts)), prefix = 'Progress:', suffix = 'Complete', length = 50)
 
-        rects += 1
+            rects += 1
+    else:
+        print("No text found. Continuing.")
+        necessity = -1
 
     if response.error.message:
         raise Exception(
@@ -216,17 +222,17 @@ file_name = os.path.abspath(name)
 print("Calling detect_text()!")
 detect_text(file_name)
 
-print("Rotating image 90 degrees!")
-img2 = rotate_image(img2, 90)
+if (necessity == 0):
+    run += 1 # next run
 
+    print("Rotating image 90 degrees!")
+    img2 = rotate_image(img2, 90)
 
-run += 1 # next run
+    print("Calling detect_text()!")
+    detect_text("visionpyfiles/temp.png")
 
-print("Calling detect_text()!")
-detect_text("visionpyfiles/temp.png")
-
-print("Rotating image 270 degrees!")
-img2 = rotate_image(img2, 270)
+    print("Rotating image 270 degrees!")
+    img2 = rotate_image(img2, 270)
 
 print("Cleaning up temporary file...") 
 os.remove("visionpyfiles/temp.png") #comment this out if you want to keep the image with the text removed
